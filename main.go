@@ -57,7 +57,19 @@ func (lb *LoadBalancer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	backend.Proxy.ServeHTTP(w, r)
 }
 
+func startDummyServer(port int) {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Response from %d", port)
+	})
+	go http.ListenAndServe(fmt.Sprintf(":%d", port), mux)
+}
+
 func main() {
+	startDummyServer(9001)
+	startDummyServer(9002)
+
 	lb, err := NewLoadBalancer([]string{
 		"http://localhost:9001",
 		"http://localhost:9002",
